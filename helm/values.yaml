@@ -1,0 +1,39 @@
+name: randomator
+# Docker registry credentials for pulling images from private repos
+
+imagePullSecrets:
+  email: ---YOUR EMAIL---
+  username: ---YOUR USERNAME---
+  password: ---YOUR NAME---
+  registry: ---YOUR REGISTRY URL---
+deployments:
+  front:
+    replicas: 2
+    image: ---YOUR REGISTRY IMAGE ---
+    container_port: 80
+    env:
+      VITE_API_URL: http://back.randomator.localhost
+  back:
+    replicas: 3
+    image: --- YOUR REGISTRY IMAGE---
+    container_port: 3000
+    env:
+      CORS: http://front.randomator.localhost
+
+services:
+  front:
+    external_port: 80
+    type: ClusterIP
+  back:
+    external_port: 3000
+    type: ClusterIP
+
+ingresses:
+  front:
+    domain: front.randomator.localhost
+    tls: false
+    tls_secret: front-tls-secret
+  back:
+    domain: back.randomator.localhost
+    tls: false
+    tls_secret: back-tls-secret

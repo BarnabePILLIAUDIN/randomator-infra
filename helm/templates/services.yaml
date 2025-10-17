@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Values.name}}-front
+spec:
+  type: {{ .Values.services.front.type }}
+  ports:
+  - port: {{ .Values.services.front.external_port }}
+    targetPort: {{ .Values.deployments.front.container_port }}
+    protocol: TCP
+    name: {{.Values.name}}-front-service
+  selector:
+    app: {{.Values.name}}-front
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Values.name}}-back
+spec:
+  type: {{ .Values.services.back.type }}
+  ports:
+  - port: {{ .Values.services.back.external_port }}
+    targetPort: {{ .Values.services.back.container_port }}
+    protocol: TCP
+    name: {{.Values.name}}-back-service
+  selector:
+    app: {{.Values.name}}-back

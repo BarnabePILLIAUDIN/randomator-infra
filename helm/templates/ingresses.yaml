@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.name }}-ingress-front
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingresses.front.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.name }}-front
+                port:
+                  number: {{ .Values.deployments.front.container_port }}
+  {{- if .Values.ingresses.front.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingresses.front.domain }}
+      secretName: {{ .Values.ingresses.front.tls_secret }}
+  {{- end }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.name }}-ingress-back
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingresses.back.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.name }}-back
+                port:
+                  number: {{ .Values.deployments.back.container_port }}
+  {{- if .Values.ingresses.back.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingresses.back.domain }}
+      secretName: {{ .Values.ingresses.back.tls_secret }}
+  {{- end }}

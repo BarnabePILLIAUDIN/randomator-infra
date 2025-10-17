@@ -1,0 +1,79 @@
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: {{ .Values.name }}-front
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-front 
+  replicas: {{ default 1 .Values.deployments.front.replicas | int }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-front 
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.name }}-docker-registry
+      containers:
+      - name: {{ .Values.name }}-front
+        image: "{{ .Values.deployments.front.image }}"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.deployments.front.container_port | int }}
+        env:
+          - name: VITE_API_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.name }}-env-front
+                key: VITE_API_URL
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.deployments.front.container_port | int }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.deployments.front.container_port | int }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: {{ .Values.name }}-back
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-back 
+  replicas: {{ default 1 .Values.deployments.back.replicas | int }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-back
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.name }}-docker-registry
+      containers:
+      - name: {{ .Values.name }}-back
+        image: "{{ .Values.deployments.back.image }}"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.deployments.back.container_port | int }}
+        env:
+          - name: CORS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.name }}-env-back
+                key: CORS
+        livenessProbe:
+          httpGet:
+            path: /random
+            port: {{ .Values.deployments.back.container_port | int }}
+        readinessProbe:
+          httpGet:
+            path: /random
+            port: {{ .Values.deployments.back.container_port | int }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
