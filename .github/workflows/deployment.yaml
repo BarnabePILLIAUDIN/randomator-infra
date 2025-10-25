@@ -17,8 +17,8 @@ jobs:
       TF_VAR_azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       TF_VAR_azure_client_id: ${{ secrets.AZURE_CLIENT_ID}}
       TF_VAR_azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET}}
-    steps:  
-      - uses: checkout@v5
+    steps:
+      - uses: actions/checkout@v5
       - uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.0
