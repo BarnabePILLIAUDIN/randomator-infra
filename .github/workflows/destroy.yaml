@@ -34,4 +34,4 @@ jobs:
           -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
           -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
       - name: Tofu destroy 
-        run: tofu apply --auto-approve
+        run: tofu destroy --auto-approve
