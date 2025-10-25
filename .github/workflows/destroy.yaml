@@ -1,4 +1,4 @@
-name: Deployment
+name: Destroy
 
 on: 
   workflow_dispatch: 
