@@ -1,9 +1,7 @@
 name: Deployment
 
 on: 
-  push:
-    branches: 
-      - main
+  workflow_dispatch: 
 
 jobs:
   deploy-aks-cluster:
@@ -35,7 +33,5 @@ jobs:
           -backend-config="resource_group_name=${{ vars.AZURE_BACKEND_RESOURCE_GROUP }}" \
           -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
           -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
-      - name: Tofu validate
-        run: tofu validate
-      - name: Tofu apply
+      - name: Tofu destroy 
         run: tofu apply --auto-approve
