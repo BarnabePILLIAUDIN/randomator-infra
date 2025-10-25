@@ -10,8 +10,8 @@ jobs:
     defaults:
       run:
         working-directory: ./terraform/azure
-    runs-on: ubuntu@latest
-    environment:  terraform
+    runs-on: ubuntu-latest
+    environment: terraform
     env:
       TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       TF_VAR_azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
