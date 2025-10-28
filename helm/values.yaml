@@ -1,11 +1,10 @@
 name: randomator
 # Docker registry credentials for pulling images from private repos
 
-imagePullSecrets:
-  email: ---YOUR EMAIL---
-  username: ---YOUR USERNAME---
-  password: ---YOUR NAME---
-  registry: ---YOUR REGISTRY URL---
+docker:
+  auth_secret_name: your-kube-secret-name
+
+
 deployments:
   front:
     replicas: 2

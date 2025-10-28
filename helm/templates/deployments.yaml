@@ -14,7 +14,7 @@ spec:
         app: {{ .Values.name }}-front 
     spec:
       imagePullSecrets:
-      - name: {{ .Values.name }}-docker-registry
+      - name: {{ .Values.docker.auth_secret_name }}
       containers:
       - name: {{ .Values.name }}-front
         image: "{{ .Values.deployments.front.image }}"
@@ -54,7 +54,7 @@ spec:
         app: {{ .Values.name }}-back
     spec:
       imagePullSecrets:
-      - name: {{ .Values.name }}-docker-registry
+        - name: {{ .Values.docker.auth_secret_name }}
       containers:
       - name: {{ .Values.name }}-back
         image: "{{ .Values.deployments.back.image }}"
