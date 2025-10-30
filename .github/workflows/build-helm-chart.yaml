@@ -23,6 +23,8 @@ jobs:
     env:
       HELM_EXPERIMENTAL_OCI: "1"
     steps:
+      - name: debug
+        run: pwd && ls -lah
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -33,22 +35,29 @@ jobs:
 
       - name: Lint Helm chart(s)
         run: |
-          # adjust path if your chart is not under ./charts/
+          # Look for charts under ./charts/ or directly in the working dir (./)
           if [ -d "./charts" ]; then
             helm lint ./charts || true
+          elif [ -f "./Chart.yaml" ]; then
+            echo "Found Chart.yaml in working dir, linting current directory"
+            helm lint . || true
           else
-            echo "No charts directory found"
+            echo "No charts directory or Chart.yaml found"
           fi
 
       - name: Package Helm chart(s)
         run: |
           mkdir -p ./packaged
-          # package all charts under ./charts (adjust path if different)
+          # package charts under ./charts or package the chart in the working dir if Chart.yaml present
           if [ -d "./charts" ]; then
             helm package ./charts -d ./packaged
             ls -la ./packaged
+          elif [ -f "./Chart.yaml" ]; then
+            echo "Packaging chart found in working dir"
+            helm package . -d ./packaged
+            ls -la ./packaged
           else
-            echo "No charts to package"
+            echo "No packaged charts found"
           fi
 
       - name: Login to GitHub Container Registry (ghcr.io)
