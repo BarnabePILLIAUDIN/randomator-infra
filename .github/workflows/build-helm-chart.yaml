@@ -23,11 +23,10 @@ jobs:
     env:
       HELM_EXPERIMENTAL_OCI: "1"
     steps:
-      - name: debug
-        run: pwd && ls -lah
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      - name: debug
+        run: pwd && ls -lah
       - name: Set up Helm
         uses: azure/setup-helm@v3
         with:
