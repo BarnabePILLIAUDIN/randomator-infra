@@ -8,13 +8,13 @@ docker:
 deployments:
   front:
     replicas: 2
-    image: ---YOUR REGISTRY IMAGE ---
+    image: barnabepilliaudin/randomator:front-latest
     container_port: 80
     env:
       VITE_API_URL: http://back.randomator.localhost
   back:
     replicas: 3
-    image: --- YOUR REGISTRY IMAGE---
+    image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:
       CORS: http://front.randomator.localhost
