@@ -15,9 +15,9 @@ permissions:
 
 jobs:
   build-and-publish:
-    # defaults:
-    #   run:
-    #     working-directory: helm
+    defaults:
+      run:
+        working-directory: helm
     environment: helm
     runs-on: ubuntu-latest
     env:
