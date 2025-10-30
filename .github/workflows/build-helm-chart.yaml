@@ -67,10 +67,12 @@ jobs:
 
       - name: Push packaged charts to GHCR (OCI)
         run: |
+          # GHCR/OCI references must be lowercase; transform repository to lowercase
+          REPO_LOWER="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           if compgen -G "./packaged/*.tgz" > /dev/null; then
             for f in ./packaged/*.tgz; do
-              echo "Pushing $f to oci://ghcr.io/${{ github.repository }}"
-              helm push "$f" oci://ghcr.io/${{ github.repository }}
+              echo "Pushing $f to oci://ghcr.io/${REPO_LOWER}"
+              helm push "$f" oci://ghcr.io/${REPO_LOWER}
             done
           else
             echo "No packaged charts found, skipping push"
