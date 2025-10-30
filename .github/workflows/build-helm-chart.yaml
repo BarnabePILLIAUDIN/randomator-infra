@@ -64,13 +64,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "${GITHUB_TOKEN}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
-
       - name: Push packaged charts to GHCR (OCI)
         run: |
           # GHCR/OCI references must be lowercase; transform repository to lowercase
           REPO_LOWER="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           if compgen -G "./packaged/*.tgz" > /dev/null; then
             for f in ./packaged/*.tgz; do
+              echo "Found packaged chart: $f"
+              # ensure filename is lowercase because OCI references and GHCR are case-sensitive
+              fname=$(basename "$f")
+              fname_lower=$(echo "$fname" | tr '[:upper:]' '[:lower:]')
+              if [ "$fname" != "$fname_lower" ]; then
+                echo "Renaming $fname -> $fname_lower"
+                mv "$f" "./packaged/$fname_lower"
+                f="./packaged/$fname_lower"
+              fi
               echo "Pushing $f to oci://ghcr.io/${REPO_LOWER}"
               helm push "$f" oci://ghcr.io/${REPO_LOWER}
             done
