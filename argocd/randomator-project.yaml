@@ -1,0 +1,12 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: randomator
+  namespace: argocd
+spec:
+  description: "The project that will host all the randomators app (staging,prod)"
+  destinations:
+    - namespace: default
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://github.com/barnabepilliaudin/randomator-infra.git

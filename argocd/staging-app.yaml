@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: randomator-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "https://barnabepilliaudin.github.io/randomator-infra/"
+    chart: randomator
+    targetRevision: "1.0.0"
+    helm: 
+      valueFiles:
+        - https://raw.githubusercontent.com/barnabepilliaudin/randomator-infra/main/helm/values.staging.yaml
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: randomator-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
