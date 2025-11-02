@@ -12,6 +12,7 @@ on:
 jobs:
   build-and-publish-pages:
     runs-on: ubuntu-latest
+    environment: helm
     defaults:
       run:
         working-directory: helm
@@ -53,7 +54,7 @@ jobs:
       - name: Publish packaged charts to GitHub Pages (gh-pages branch)
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN_GITHUB }}
           publish_dir: ./packaged
           publish_branch: gh-pages
           force_orphan: true
