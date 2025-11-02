@@ -27,7 +27,6 @@ jobs:
 
       - name: Package Helm chart(s)
         run: |
-          set -eux
           mkdir -p ./packaged
           # package charts under ./charts or package the chart in the helm working dir if Chart.yaml present
           if [ -d "./charts" ]; then
@@ -50,6 +49,7 @@ jobs:
           echo "Pages URL: ${PAGES_URL}"
           helm repo index ./packaged --url "${PAGES_URL}"
           ls -la ./packaged
+          cat ./packaged/index.yaml
 
       - name: Publish packaged charts to GitHub Pages (gh-pages branch)
         uses: peaceiris/actions-gh-pages@v3
