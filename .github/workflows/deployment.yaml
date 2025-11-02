@@ -56,11 +56,16 @@ jobs:
   deploy-apps:
     needs: deploy-aks-cluster
     runs-on: ubuntu-latest
+    environment: terraform
     steps:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.3'
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Configure kubeconfig
         run: |
           set -euo pipefail
