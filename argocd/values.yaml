@@ -1,0 +1,48 @@
+nameOverride: argocd
+crds:
+  install: true
+  keep: true
+  annotations: {}
+  additionalLabels: {}
+
+global:
+  domain: argocd.randomator.localhost
+  image:
+    repository: quay.io/argoproj/argocd
+
+server:
+  name: server
+  replicas: 1
+  spec:
+    containers:
+      - command:
+          - argocd-server
+          - --staticassets
+          - /shared/app
+          - --insecure
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    controller: generic
+    labels: {}
+    ingressClassName: "nginx"
+    hostname: "argocd.randomator.localhost"
+    path: /
+    pathType: Prefix
+    tls: false
+
+
+applicationSet:
+  ingress:
+    enabled: true
+    labels: {}
+    ingressClassName: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    hostname: "argocd.randomator.localhost"
+    path: /api/webhook
+    pathType: Prefix
+    tls: false
