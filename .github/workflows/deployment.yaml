@@ -12,6 +12,8 @@ jobs:
       run:
         working-directory: ./terraform/azure
     runs-on: ubuntu-latest
+    outputs:
+      kubectl_command: ${{ steps.tf-outputs.outputs.kubectl_command }}
     environment: terraform
     env:
       # Terraform variables passed to the config (kept for backward compatibility)
@@ -45,3 +47,29 @@ jobs:
         run: tofu validate
       - name: Tofu apply
         run: tofu apply --auto-approve
+      - name: Capture kubectl command output
+        id: tf-outputs
+        run: |
+          # -raw returns the raw string without quotes/newlines
+          echo "kubectl_command=$(tofu output -raw kubectl_config_command)" >> $GITHUB_OUTPUT
+
+  deploy-apps:
+    needs: deploy-aks-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.3'
+      - name: Configure kubeconfig
+        run: |
+          set -euo pipefail
+          cmd="${{ needs.deploy-aks-cluster.outputs.kubectl_command }}"
+          if [ -z "$cmd" ]; then
+            echo "kubectl_command is empty" >&2
+            exit 1
+          fi
+          # Execute the command produced by Terraform to populate the kubeconfig
+          eval "$cmd"
+      - name: Show nodes
+        run: kubectl get nodes
