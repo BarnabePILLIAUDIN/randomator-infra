@@ -1,0 +1,59 @@
+name: Publish Helm chart to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'helm/**'
+      - '.github/workflows/publish-helm-pages.yaml'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-pages:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+
+      - name: Package Helm chart(s)
+        run: |
+          set -eux
+          mkdir -p ./packaged
+          # package charts under ./charts or package the chart in the helm working dir if Chart.yaml present
+          if [ -d "./charts" ]; then
+            helm package ./charts -d ./packaged
+          elif [ -f "./Chart.yaml" ]; then
+            echo "Packaging chart found in working dir"
+            helm package . -d ./packaged
+          else
+            echo "No charts found to package"
+          fi
+          ls -la ./packaged
+
+      - name: Generate Helm repo index
+        run: |
+          set -eux
+          # Build the Pages URL and generate index.yaml so GitHub Pages can serve the chart repo
+          OWNER_LOWER=$(echo "${GITHUB_REPOSITORY%%/*}" | tr '[:upper:]' '[:lower:]')
+          REPO_LOWER=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
+          PAGES_URL="https://${OWNER_LOWER}.github.io/${REPO_LOWER}"
+          echo "Pages URL: ${PAGES_URL}"
+          helm repo index ./packaged --url "${PAGES_URL}"
+          ls -la ./packaged
+
+      - name: Publish packaged charts to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packaged
+          publish_branch: gh-pages
+          force_orphan: true
