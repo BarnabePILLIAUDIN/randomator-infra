@@ -105,6 +105,115 @@ jobs:
           helm upgrade --install ingress-nginx ingress-nginx \
             --repo https://kubernetes.github.io/ingress-nginx \
             --namespace ingress-nginx --create-namespace --atomic
+      - name: Install Crossplane
+        run: |
+          helm repo add crossplane-stable https://charts.crossplane.io/stable
+          helm repo update
+          helm install crossplane --namespace crossplane-system crossplane-stable/crossplane --create-namespace --atomic
+      - name: Install scaleway provider
+        run: kubectl apply -f crossplane/scaleway-provider.yaml
+      - name: Create SCW auth secret
+        run: |
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: scaleway-auth
+            namespace: crossplane-system
+          type: Opaque
+          stringData:
+            credentials: |
+              {
+                "access_key": "${{secrets.SCW_ACCESS_KEY}}",
+                "secret_key": "${{secrets.SCW_SECRET_KEY}}",
+                "project_id": "${{secrets.SCW_PROJECT_ID}}",
+                "region": "fr-par",
+                "zone": "fr-par-1"
+              }
+          EOF
+      - name: Link scw provider to scw auth
+        run: |
+          cat <<EOF | kubectl apply -f -
+            apiVersion: scaleway.upbound.io/v1beta1
+            kind: ProviderConfig
+            metadata:
+              name: default
+            spec:
+              credentials:
+                source: Secret
+                secretRef:
+                  name: scaleway-auth 
+                  namespace: crossplane-system
+                  key: credentials
+          EOF
+      - name: Create DNS record
+        run: |
+          sudo apt install jq
+          IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}')
+          cat <<EOF | kubectl apply -f -
+              apiVersion: domain.scaleway.upbound.io/v1alpha1
+              kind: Record
+              metadata:
+                name: domain-record-prod-front
+              spec:
+                forProvider:
+                  dnsZone: ${{secrets.SCW_DOMAIN}}
+                  type: A
+                  data: $IP
+                  ttl: 60
+                  priority: 0
+                  name: prod-front
+                providerConfigRef:
+                  name: default
+            EOF
+          cat <<EOF | kubectl apply -f -
+              apiVersion: domain.scaleway.upbound.io/v1alpha1
+              kind: Record
+              metadata:
+                name: domain-record-prod-back
+              spec:
+                forProvider:
+                  dnsZone: ${{secrets.SCW_DOMAIN}}
+                  type: A
+                  data: $IP
+                  ttl: 60
+                  priority: 0
+                  name: prod-back
+                providerConfigRef:
+                  name: default
+            EOF
+            cat <<EOF | kubectl apply -f -
+              apiVersion: domain.scaleway.upbound.io/v1alpha1
+              kind: Record
+              metadata:
+                name: domain-record-staging-front
+              spec:
+                forProvider:
+                  dnsZone: ${{secrets.SCW_DOMAIN}}
+                  type: A
+                  data: $IP
+                  ttl: 60
+                  priority: 0
+                  name: staging-front
+                providerConfigRef:
+                  name: default
+            EOF
+          cat <<EOF | kubectl apply -f -
+              apiVersion: domain.scaleway.upbound.io/v1alpha1
+              kind: Record
+              metadata:
+                name: domain-record-staging-back
+              spec:
+                forProvider:
+                  dnsZone: ${{secrets.SCW_DOMAIN}}
+                  type: A
+                  data: $IP
+                  ttl: 60
+                  priority: 0
+                  name: staging-back
+                providerConfigRef:
+                  name: default
+            EOF
       - name: Install argoCD
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
@@ -114,10 +223,6 @@ jobs:
             --namespace argocd \
             --atomic \
             --create-namespace
-      - name: Create NS for prod and staging
-        run: |
-          kubectl create ns randomator-staging --dry-run=client -o yaml| kubectl apply -f - 
-          kubectl create ns randomator-prod --dry-run=client -o yaml| kubectl apply -f - 
       - name: Create ArgoCD apps
         run: |
           kubectl apply -f argocd/randomator-project.yaml

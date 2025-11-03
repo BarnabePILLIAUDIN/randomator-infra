@@ -9,13 +9,13 @@ deployments:
     image: barnabepilliaudin/randomator:front-latest
     container_port: 80
     env:
-      VITE_API_URL: http://back.randomator-staging.localhost
+      VITE_API_URL: http://staging-back.barnabepilliaudin.fr
   back:
     replicas: 1
     image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:
-      CORS: http://front.randomator-staging.localhost
+      CORS: http://staging-front.barnabepilliaudin.fr
 
 services:
   front:
@@ -27,10 +27,10 @@ services:
 
 ingresses:
   front:
-    domain: front.randomator-staging.localhost
-    tls: false
+    domain: staging-front.barnabepilliaudin.fr
+    tls: true
     tls_secret: front-tls-secret
   back:
-    domain: back.randomator-staging.localhost
-    tls: false
+    domain: staging-back.barnabepilliaudin.fr
+    tls: true
     tls_secret: back-tls-secret

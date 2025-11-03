@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scaleway-auth
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  credentials: |
+    {
+      "access_key": "XXXXXXXXXXXXXX",
+      "secret_key": "XXXXXXXXXXXXXX",
+      "project_id": "XXXXXXXXXXXXXX",
+      "region": "fr-par",
+      "zone": "fr-par-1"
+    }
