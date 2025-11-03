@@ -5,13 +5,13 @@ docker:
 
 deployments:
   front:
-    replicas: 2
+    replicas: 1
     image: barnabepilliaudin/randomator:front-latest
     container_port: 80
     env:
       VITE_API_URL: http://back.randomator-staging.localhost
   back:
-    replicas: 3
+    replicas: 1
     image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:

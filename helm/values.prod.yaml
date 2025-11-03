@@ -11,7 +11,7 @@ deployments:
     env:
       VITE_API_URL: http://back.randomator.localhost
   back:
-    replicas: 3
+    replicas: 2
     image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:
