@@ -88,10 +88,10 @@ jobs:
       - name: Apply Cluster issuer
         run: kubectl apply -f cert-manager/lets-encrypt-issuer.yaml
       - name: Setup ingress controller
-        run: 
-          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
-          helm repo update && \
-          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+        run: |
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --repo https://kubernetes.github.io/ingress-nginx \
+            --namespace ingress-nginx --create-namespace --atomic
       - name: Install argoCD
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
