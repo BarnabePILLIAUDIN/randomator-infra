@@ -78,6 +78,17 @@ jobs:
           eval "$cmd"
       - name: Setup Helm
         uses: azure/setup-helm@v4.3.0
+      - name: Create auth secrets
+        run: |
+          for ns in randomator-staging randomator-prod; do
+            kubectl create secret docker-registry docker-auth \
+              --docker-server="${{secrets.REGISTRY_URL}}" \
+              --docker-username="${{secrets.REGISTRY_USERNAME}}" \
+              --docker-password="${{secrets.REGISTRY_TOKEN}}" \
+              --docker-email="${{secrets.REGISTRY_EMAIL}}" \
+              -n $ns \
+              --dry-run=client -o yaml| kubectl apply -f - 
+          done
       - name: Setup Cert Manager
         run: |
           helm upgrade --install cert-manager oci://quay.io/jetstack/charts/cert-manager \
@@ -106,17 +117,6 @@ jobs:
         run: |
           kubectl create ns randomator-staging --dry-run=client -o yaml| kubectl apply -f - 
           kubectl create ns randomator-prod --dry-run=client -o yaml| kubectl apply -f - 
-      - name: Create auth secrets
-        run: |
-          for ns in randomator-staging randomator-prod; do
-            kubectl create secret docker-registry docker-auth \
-              --docker-server="${{secrets.REGISTRY_URL}}" \
-              --docker-username="${{secrets.REGISTRY_USERNAME}}" \
-              --docker-password="${{secrets.REGISTRY_TOKEN}}" \
-              --docker-email="${{secrets.REGISTRY_EMAIL}}" \
-              -n $ns \
-              --dry-run=client -o yaml| kubectl apply -f - 
-          done
       - name: Create ArgoCD apps
         run: |
           kubectl apply -f argocd/randomator-project.yaml
