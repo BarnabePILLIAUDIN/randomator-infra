@@ -31,7 +31,7 @@ variable "node_count" {
 variable "vm_size" {
   description = "Size of the virtual machines for nodes"
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B2ms"
 }
 
 variable "subnet_id" {
