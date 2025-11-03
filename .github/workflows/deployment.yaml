@@ -50,7 +50,6 @@ jobs:
       - name: Capture kubectl command output
         id: tf-outputs
         run: |
-          # -raw returns the raw string without quotes/newlines
           echo "kubectl_command=$(tofu output -raw kubectl_config_command)" >> $GITHUB_OUTPUT
 
   deploy-apps:
@@ -104,8 +103,8 @@ jobs:
             --create-namespace
       - name: Create NS for prod and staging
         run: |
-          kubectl create ns randomator-staging
-          kubectl create ns randomator-prod
+          kubectl create ns randomator-staging --dry-run=client -o yaml| kubectl apply -f - 
+          kubectl create ns randomator-prod --dry-run=client -o yaml| kubectl apply -f - 
       - name: Create auth secrets
         run: |
           for ns in randomator-staging randomator-prod; do
@@ -114,7 +113,8 @@ jobs:
               --docker-username="${{secrets.REGISTRY_USERNAME}}" \
               --docker-password="${{secrets.REGISTRY_TOKEN}}" \
               --docker-email="[email]" \
-              -n randomator
+              -n randomator \
+              --dry-run=client -o yaml| kubectl apply -f - 
           done
       - name: Create ArgoCD apps
         run: |
