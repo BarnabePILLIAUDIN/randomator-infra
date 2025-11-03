@@ -80,8 +80,7 @@ jobs:
         uses: azure/setup-helm@v4.3.0
       - name: Setup Cert Manager
         run: |
-          helm upgrade --install  \
-            cert-manager oci://quay.io/jetstack/charts/cert-manager \
+          helm upgrade --install cert-manager oci://quay.io/jetstack/charts/cert-manager \
             --version v1.19.1 \
             --namespace cert-manager \
             --create-namespace \
