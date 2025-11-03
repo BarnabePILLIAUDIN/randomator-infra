@@ -78,9 +78,10 @@ jobs:
           eval "$cmd"
       - name: Setup Helm
         uses: azure/setup-helm@v4.3.0
-      - name: Create auth secrets
+      - name: Create auth secrets and ns
         run: |
           for ns in randomator-staging randomator-prod; do
+            kubectl create ns $ns --dry-run=client -o yaml| kubectl apply -f -
             kubectl create secret docker-registry docker-auth \
               --docker-server="${{secrets.REGISTRY_URL}}" \
               --docker-username="${{secrets.REGISTRY_USERNAME}}" \
