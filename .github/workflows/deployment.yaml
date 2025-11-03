@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       kubectl_command: ${{ steps.tf-outputs.outputs.kubectl_command }}
-    environment: terraform
+    environment: ci
     env:
       # Terraform variables passed to the config (kept for backward compatibility)
       TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -56,7 +56,7 @@ jobs:
   deploy-apps:
     needs: deploy-aks-cluster
     runs-on: ubuntu-latest
-    environment: terraform
+    environment: ci
     steps:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
@@ -76,5 +76,47 @@ jobs:
           fi
           # Execute the command produced by Terraform to populate the kubeconfig
           eval "$cmd"
-      - name: Show nodes
-        run: kubectl get nodes
+      - name: Setup Helm
+        uses: azure/setup-helm@v4.3.0
+      - name: Setup Cert Manager
+        run: |
+          helm install \
+            cert-manager oci://quay.io/jetstack/charts/cert-manager \
+            --version v1.19.1 \
+            --namespace cert-manager \
+            --create-namespace \
+            --set crds.enabled=true
+      - name: Apply Cluster issuer
+        run: kubectl apply -f cert-manager/lets-encrypt-issuer.yaml
+      - name: Setup ingress controller
+        run: 
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --repo https://kubernetes.github.io/ingress-nginx \
+            --namespace ingress-nginx --create-namespace
+      - name: Install argoCD
+        run: |
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+          helm upgrade --install argocd argo/argo-cd \
+            --values argocd/values.yaml \
+            --namespace argocd \
+            --create-namespace
+      - name: Create NS for prod and staging
+        run: |
+          kubectl create ns randomator-staging
+          kubectl create ns randomator-prod
+      - name: Create auth secrets
+        run: |
+          for ns in randomator-staging randomator-prod; do
+            kubectl create secret docker-registry docker-auth \
+              --docker-server="${{secrets.REGISTRY_URL}}" \
+              --docker-username="${{secrets.REGISTRY_USERNAME}}" \
+              --docker-password="${{secrets.REGISTRY_TOKEN}}" \
+              --docker-email="[email]" \
+              -n randomator
+          done
+      - name: Create ArgoCD apps
+        run: |
+          kubectl apply -f argocd/randomator-project.yaml
+          kubectl apply -f argocd/staging-app.yaml
+          kubectl apply -f argocd/prod-app.yaml
