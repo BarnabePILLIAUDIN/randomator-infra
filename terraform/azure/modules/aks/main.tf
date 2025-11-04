@@ -59,7 +59,7 @@ variable "enable_auto_scaling" {
 variable "min_count" {
   description = "Minimum number of nodes for auto scaling"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "max_count" {
