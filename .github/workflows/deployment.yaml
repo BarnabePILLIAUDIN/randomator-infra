@@ -119,6 +119,19 @@ jobs:
             --create-namespace --atomic
       - name: Install scaleway provider
         run: kubectl apply -f crossplane/scaleway-provider.yaml
+        
+      - name: Wait for CRDs to be installed
+        run: |
+          set -euo pipefail
+          echo "Waiting for CRDs to appear..."
+          # wait until at least one CRD is present
+          until kubectl get crd --no-headers 2>/dev/null | grep -q .; do
+            echo "No CRDs detected yet, sleeping 3s..."
+            sleep 3
+          done
+          echo "CRDs detected, waiting for them to become Established (timeout 300s)..."
+          # wait for all CRDs to become Established (timeout can be adjusted)
+          kubectl wait --for=condition=Established --all crd --timeout=300s
       - name: Create SCW auth secret
         run: |
           cat <<EOF | kubectl apply -f -
@@ -139,21 +152,7 @@ jobs:
               }
           EOF
       - name: Link scw provider to scw auth
-        run: |
-          cat <<EOF | kubectl apply -f -
-            apiVersion: scaleway.upbound.io/v1beta1
-            kind: ProviderConfig
-            metadata:
-              name: default
-              namespace: crossplane-system
-            spec:
-              credentials:
-                source: Secret
-                secretRef:
-                  name: scaleway-auth
-                  namespace: crossplane-system
-                  key: credentials
-          EOF
+        run: kubectl apply -f crossplane/provider-config.yaml
       - name: Create DNS record
         run: |
           sudo apt install jq
