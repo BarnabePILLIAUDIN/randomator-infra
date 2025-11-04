@@ -6,7 +6,7 @@ crds:
   additionalLabels: {}
 
 global:
-  domain: argocd.randomator.localhost
+  domain: argocd.randomator.barnabepilliaudin.fr
   image:
     repository: quay.io/argoproj/argocd
 
