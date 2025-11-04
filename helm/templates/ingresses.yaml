@@ -2,6 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.name }}-ingress-front
+  {{- if .Values.ingresses.front.tls }}
+  annotations:
+    cert-manager.io/cluster-issuer: "lestencrypt"
+  {{- end }}
 spec:
   ingressClassName: nginx
   rules:
@@ -27,6 +31,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.name }}-ingress-back
+  {{- if .Values.ingresses.back.tls }}
+  annotations:
+    cert-manager.io/cluster-issuer: "lestencrypt"
+  {{- end }}
 spec:
   ingressClassName: nginx
   rules:
