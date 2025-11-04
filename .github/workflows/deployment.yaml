@@ -155,72 +155,76 @@ jobs:
         run: kubectl apply -f crossplane/provider-config.yaml
       - name: Create DNS record
         run: |
-          sudo apt install jq
-          IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}')
+          # make apt non-interactive and ensure jq is present
+          sudo apt-get update
+          sudo apt-get install -y jq
+          set -euo pipefail
+
+          # Get external IP of the ingress controller
+          IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+          # Apply all DNS records in a single multi-resource YAML to avoid heredoc/indentation issues
           cat <<EOF | kubectl apply -f -
-              apiVersion: domain.scaleway.upbound.io/v1alpha1
-              kind: Record
-              metadata:
-                name: domain-record-prod-front
-              spec:
-                forProvider:
-                  dnsZone: ${{secrets.SCW_DOMAIN}}
-                  type: A
-                  data: $IP
-                  ttl: 60
-                  priority: 0
-                  name: prod-front
-                providerConfigRef:
-                  name: default
-            EOF
-          cat <<EOF | kubectl apply -f -
-              apiVersion: domain.scaleway.upbound.io/v1alpha1
-              kind: Record
-              metadata:
-                name: domain-record-prod-back
-              spec:
-                forProvider:
-                  dnsZone: ${{secrets.SCW_DOMAIN}}
-                  type: A
-                  data: $IP
-                  ttl: 60
-                  priority: 0
-                  name: prod-back
-                providerConfigRef:
-                  name: default
-            EOF
-            cat <<EOF | kubectl apply -f -
-              apiVersion: domain.scaleway.upbound.io/v1alpha1
-              kind: Record
-              metadata:
-                name: domain-record-staging-front
-              spec:
-                forProvider:
-                  dnsZone: ${{secrets.SCW_DOMAIN}}
-                  type: A
-                  data: $IP
-                  ttl: 60
-                  priority: 0
-                  name: staging-front
-                providerConfigRef:
-                  name: default
-            EOF
-          cat <<EOF | kubectl apply -f -
-              apiVersion: domain.scaleway.upbound.io/v1alpha1
-              kind: Record
-              metadata:
-                name: domain-record-staging-back
-              spec:
-                forProvider:
-                  dnsZone: ${{secrets.SCW_DOMAIN}}
-                  type: A
-                  data: $IP
-                  ttl: 60
-                  priority: 0
-                  name: staging-back
-                providerConfigRef:
-                  name: default
-            EOF
+          apiVersion: domain.scaleway.upbound.io/v1alpha1
+          kind: Record
+          metadata:
+            name: domain-record-prod-front
+          spec:
+            forProvider:
+              dnsZone: ${{secrets.SCW_DOMAIN}}
+              type: A
+              data: $IP
+              ttl: 60
+              priority: 0
+              name: prod-front
+            providerConfigRef:
+              name: default
+          ---
+          apiVersion: domain.scaleway.upbound.io/v1alpha1
+          kind: Record
+          metadata:
+            name: domain-record-prod-back
+          spec:
+            forProvider:
+              dnsZone: ${{secrets.SCW_DOMAIN}}
+              type: A
+              data: $IP
+              ttl: 60
+              priority: 0
+              name: prod-back
+            providerConfigRef:
+              name: default
+          ---
+          apiVersion: domain.scaleway.upbound.io/v1alpha1
+          kind: Record
+          metadata:
+            name: domain-record-staging-front
+          spec:
+            forProvider:
+              dnsZone: ${{secrets.SCW_DOMAIN}}
+              type: A
+              data: $IP
+              ttl: 60
+              priority: 0
+              name: staging-front
+            providerConfigRef:
+              name: default
+          ---
+          apiVersion: domain.scaleway.upbound.io/v1alpha1
+          kind: Record
+          metadata:
+            name: domain-record-staging-back
+          spec:
+            forProvider:
+              dnsZone: ${{secrets.SCW_DOMAIN}}
+              type: A
+              data: $IP
+              ttl: 60
+              priority: 0
+              name: staging-back
+            providerConfigRef:
+              name: default
+          EOF
       - name: Install argoCD
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
