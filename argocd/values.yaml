@@ -19,20 +19,19 @@ server:
           - argocd-server
           - --staticassets
           - /shared/app
-          - --insecure
   ingress:
     enabled: true
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      cert-manager.io/cluster-issuer: "letsencrypt"
     controller: generic
     labels: {}
     ingressClassName: "nginx"
-    hostname: "argocd.randomator.localhost"
+    hostname: "argocd.randomator.barnabepilliaudin.fr"
     path: /
     pathType: Prefix
     tls: false
-
 
 applicationSet:
   ingress:
@@ -42,7 +41,8 @@ applicationSet:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    hostname: "argocd.randomator.localhost"
+      cert-manager.io/cluster-issuer: "letsencrypt"
+    hostname: "argocd.randomator.barnabepilliaudin.fr"
     path: /api/webhook
     pathType: Prefix
     tls: false

@@ -5,13 +5,13 @@ docker:
 
 deployments:
   front:
-    replicas: 2
+    replicas: 1
     image: barnabepilliaudin/randomator:front-latest
     container_port: 80
     env:
       VITE_API_URL: https://prod-back.barnabepilliaudin.fr
   back:
-    replicas: 2
+    replicas: 1
     image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:
@@ -29,8 +29,8 @@ ingresses:
   front:
     domain: prod-front.barnabepilliaudin.fr
     tls: true
-    tls_secret: front-tls-secret
+    tls_secret: front-tls-secret-prod
   back:
     domain: prod-back.barnabepilliaudin.fr
     tls: true
-    tls_secret: back-tls-secret
+    tls_secret: back-tls-secret-prod
