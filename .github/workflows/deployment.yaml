@@ -112,11 +112,9 @@ jobs:
           up uxp install
           helm repo add crossplane-stable https://charts.crossplane.io/stable
           helm repo update
-          helm upgrade --install crossplane \
-            --namespace crossplane-system \
-            --create-namespace crossplane-stable/crossplane \
-            --set crds.enabled=true \
-            --create-namespace --atomic
+          helm upgrade --install crossplane crossplane-stable/crossplane \
+            --namespace crossplane-system --create-namespace --atomic \
+            --set crds.enabled=true 
       - name: Install scaleway provider
         run: kubectl apply -f crossplane/scaleway-provider.yaml
       - name: Create SCW auth secret
