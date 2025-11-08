@@ -9,13 +9,13 @@ deployments:
     image: barnabepilliaudin/randomator:front-latest
     container_port: 80
     env:
-      VITE_API_URL: https://prod-back.barnabepilliaudin.fr
+      VITE_API_URL: http://prod-back.barnabepilliaudin.fr
   back:
     replicas: 1
     image: barnabepilliaudin/randomator:back-latest
     container_port: 3000
     env:
-      CORS: https://prod-front.barnabepilliaudin.fr
+      CORS: http://prod-front.barnabepilliaudin.fr
 
 services:
   front:
@@ -28,9 +28,9 @@ services:
 ingresses:
   front:
     domain: prod-front.barnabepilliaudin.fr
-    tls: true
+    tls: false
     tls_secret: front-tls-secret-prod
   back:
     domain: prod-back.barnabepilliaudin.fr
-    tls: true
+    tls: false
     tls_secret: back-tls-secret-prod
