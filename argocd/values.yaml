@@ -24,7 +24,6 @@ server:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-      cert-manager.io/cluster-issuer: "letsencrypt"
     controller: generic
     labels: {}
     ingressClassName: "nginx"
@@ -41,7 +40,6 @@ applicationSet:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-      cert-manager.io/cluster-issuer: "letsencrypt"
     hostname: "argocd.randomator.barnabepilliaudin.fr"
     path: /api/webhook
     pathType: Prefix
